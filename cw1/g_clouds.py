@@ -38,6 +38,7 @@ h_points = generate_flat_horizontal(5, 5, 1000)
 v_points = generate_flat_vertical(5, 5, 1000)
 
 #saving each set of cloud points to the .xyz files
-save_to_xyz("cylinder.xyz", c_points)
-save_to_xyz("horizontal.xyz", h_points)
-save_to_xyz("vertical.xyz", v_points)
+# !!! downloaded source files should be put in 'cw1' folder
+save_to_xyz("cw1/cylinder.xyz", c_points) 
+save_to_xyz("cw1/horizontal.xyz", h_points)
+save_to_xyz("cw1/vertical.xyz", v_points)
