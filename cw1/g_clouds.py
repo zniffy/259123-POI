@@ -1,6 +1,7 @@
 import numpy as np
 from csv import writer
 
+points_shift = 10
 
 def generate_cylinder(radius, height, num_points):
     theta = np.random.uniform(0, 2 * np.pi, num_points)
@@ -11,7 +12,7 @@ def generate_cylinder(radius, height, num_points):
     return points
 
 def generate_flat_horizontal(width, length, num_points, z_value=0.0):
-    x = np.random.uniform(-width / 2, width / 2, num_points)
+    x = np.random.uniform(-width / 2, width / 2, num_points) - points_shift
     y = np.random.uniform(-length / 2, length / 2, num_points)
     z = np.full(num_points, z_value)
     points = zip(x, y, z)
@@ -19,7 +20,7 @@ def generate_flat_horizontal(width, length, num_points, z_value=0.0):
 
 
 def generate_flat_vertical(width, height, num_points, x_value=0.0):
-    y = np.random.uniform(-width/ 2, width / 2, num_points)
+    y = np.random.uniform(-width / 2, width / 2, num_points) + points_shift
     z = np.random.uniform(-height / 2, height / 2, num_points)
     x = np.full(num_points, x_value)
     points = zip(x, y, z)
