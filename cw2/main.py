@@ -5,6 +5,84 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
 
+def ransac_method(num_of_inliers, treshold, max_attempts, arr, color=""):
+    attempts = 0
+    best_inliers_count = 0
+    best_attempt = None
+    best_normal = None
+    best_inliers_acc_arr = None
+    num_of_inliers_found = False
+
+    while attempts <= max_attempts:
+        idx_arr = np.random.choice(arr.shape[0], size=3, replace=False)
+        random_3p = arr[idx_arr]
+        A_p = random_3p[0]
+        B_p = random_3p[1]
+        C_p = random_3p[2]
+
+        vec_A = A_p - C_p
+        vec_B = B_p - C_p
+
+        normal_vector = np.cross(vec_A, vec_B)
+        uvec_C = normal_vector / np.linalg.norm(normal_vector)
+
+        D = -np.dot(uvec_C, C_p)
+        distances = np.abs(np.dot(uvec_C, arr.T) + D)
+        inliers_arr = np.where(distances <= treshold)[0]
+        inliers_count = len(inliers_arr)
+        inliers_acc_arr = arr[inliers_arr]
+
+        attempts += 1
+
+        if inliers_count > best_inliers_count:
+            best_inliers_count = inliers_count
+            best_normal = uvec_C
+            best_attempt = attempts
+            best_inliers_acc_arr = inliers_acc_arr
+            
+
+        if best_inliers_count >= num_of_inliers:
+            num_of_inliers_found = True
+
+        
+        
+    if num_of_inliers_found:
+        print("Found plane with:", best_inliers_count, "inliers, within:", best_attempt, "attempts")
+        print("Best normal vector:", best_normal)
+        if color == "r":
+            if np.all(best_normal == np.array([0, 0, 1])) or np.all(best_normal == np.array([0, 0, -1])):
+                print("Red plane is horizontal")
+            elif np.all(best_normal == np.array([1, 0, 0])) or np.all(best_normal == np.array([-1, 0, 0])) or np.all(best_normal == np.array([0, 1, 0])) or np.all(best_normal == np.array([0, -1, 0])):
+                print("Red plane is vertical")
+            else:
+                print("Red object is not horizontal nor vertical")
+        elif color == "b":
+            if np.all(best_normal == np.array([0, 0, 1])) or np.all(best_normal == np.array([0, 0, -1])):
+                print("Blue plane is horizontal")
+            elif np.all(best_normal == np.array([1, 0, 0])) or np.all(best_normal == np.array([-1, 0, 0])) or np.all(best_normal == np.array([0, 1, 0])) or np.all(best_normal == np.array([0, -1, 0])):
+                print("Blue plane is vertical")
+            else:
+                print("Blue object is not horizontal nor vertical")
+        elif color == "g":
+            if np.all(best_normal == np.array([0, 0, 1])) or np.all(best_normal == np.array([0, 0, -1])):
+                print("Green plane is horizontal")
+            elif np.all(best_normal == np.array([1, 0, 0])) or np.all(best_normal == np.array([-1, 0, 0])) or np.all(best_normal == np.array([0, 1, 0])) or np.all(best_normal == np.array([0, -1, 0])):
+                print("Green plane is vertical")
+            else:
+                print("Green object is not horizontal nor vertical")
+
+        centroid = np.mean(best_inliers_acc_arr, axis=0)
+        centered_points = best_inliers_acc_arr - centroid
+        U, S, V = np.linalg.svd(centered_points)
+        final_normal = V[-1]
+        final_normal_u = final_normal / np.linalg.norm(final_normal)
+        print("Final normal vector found using least squares method is:", final_normal_u)
+        print("###################################################################################################")
+    else:
+        print("No sufficiently good plane found within", max_attempts, "attempts.")
+        print("Maximum inliers found:", best_inliers_count)
+        print("###################################################################################################")
+
 # START of KMeans
 input_files = ["cw1/cylinder.xyz", "cw1/horizontal.xyz", "cw1/vertical.xyz"]
 
@@ -61,74 +139,6 @@ for i, val in enumerate (pred):
 red_plane_arr = np.array(red_plane)
 blue_plane_arr = np.array(blue_plane)
 green_plane_arr = np.array(green_plane)
-
-
-def ransac_method(num_of_inliers, treshold, max_attempts, arr, color=""):
-    attempts = 0
-    best_inliers_count = 0
-    best_attempt = None
-    best_normal = None
-    num_of_inliers_found = False
-
-    while attempts <= max_attempts:
-        idx_arr = np.random.choice(arr.shape[0], size=3, replace=False)
-        random_3p = arr[idx_arr]
-        A_p = random_3p[0]
-        B_p = random_3p[1]
-        C_p = random_3p[2]
-
-        vec_A = A_p - C_p
-        vec_B = B_p - C_p
-
-        normal_vector = np.cross(vec_A, vec_B)
-        uvec_C = normal_vector / np.linalg.norm(normal_vector)
-
-        D = -np.dot(uvec_C, C_p)
-        distances = np.abs(np.dot(uvec_C, arr.T) + D)
-        inliers_arr = np.where(distances <= treshold)[0]
-        inliers_count = len(inliers_arr)
-
-        attempts += 1
-
-        if inliers_count > best_inliers_count:
-            best_inliers_count = inliers_count
-            best_normal = uvec_C
-            best_attempt = attempts
-
-        if best_inliers_count >= num_of_inliers:
-            num_of_inliers_found = True
-
-        
-        
-    if num_of_inliers_found:
-        print("Found plane with:", best_inliers_count, "inliers, within:", best_attempt, "attempts")
-        print("Best normal vector:", best_normal)
-        if color == "r":
-            if (best_normal[2] == 1) or (best_normal[2] == -1):
-                print("Red plane is horizontal")
-            elif (best_normal[0] == 1) or (best_normal[0] == -1) or (best_normal[1] == 1) or (best_normal[1] == -1):
-                print("Red plane is vertical")
-            else:
-                print("Red object is not horizontal nor vertical")
-        elif color == "b":
-            if (best_normal[2] == 1) or (best_normal[2] == -1):
-                print("Blue plane is horizontal")
-            elif (best_normal[0] == 1) or (best_normal[0] == -1) or (best_normal[1] == 1) or (best_normal[1] == -1):
-                print("Blue plane is vertical")
-            else:
-                print("Blue object is not horizontal nor vertical")
-        elif color == "g":
-            if (best_normal[2] == 1) or (best_normal[2] == -1):
-                print("Green plane is horizontal")
-            elif (best_normal[0] == 1) or (best_normal[0] == -1) or (best_normal[1] == 1) or (best_normal[1] == -1):
-                print("Green plane is vertical")
-            else:
-                print("Green object is not horizontal nor vertical")
-        print("######################################################")
-    else:
-        print("No sufficiently good plane found within", max_attempts, "attempts.")
-        print("Maximum inliers found:", best_inliers_count)
-        print("######################################################")
 
 
 ransac_method(20, 1, 100, red_plane_arr, "r")
