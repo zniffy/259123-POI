@@ -98,7 +98,7 @@ compute_glcm_features_to_csv("cw3/textures_samples/gres", "cw3/textures_samples/
 #loading the data                                                                                   #
 features = pandas.read_csv('cw3/ftr.csv', sep=';')                                                  #
 data = np.array(features)                                                                           #
-X = (data[:,1:-1]).astype('float64')                                                                #
+X = (data[:,0:-1]).astype('float64')                                                                #
 Y = data[:,-1]                                                                                      #
                                                                                                     #
 #scaling data for better accuracy                                                                   #
